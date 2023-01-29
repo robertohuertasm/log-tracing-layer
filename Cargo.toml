@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "log-tracing-layer",
+  "dd-tracing-layer",
+]
+

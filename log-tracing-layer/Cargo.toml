@@ -1,0 +1,25 @@
+[package]
+name = "log-tracing-layer"
+version = "0.1.0"
+authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
+description = "Build your own custom tracing layer."
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/robertohuertasm/log-tracing-layer"
+categories = ["development-tools", "debugging", "asynchronous", "profiling"]
+keywords = ["tracing", "log", "layer", "tracing-subscriber"]
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing-subscriber = "0.3" 
+tracing = "0.1"
+tokio = { version = "1", features = ["sync", "rt-multi-thread", "time"] }
+serde_json = "1"
+chrono = "0.4"
+async-trait = "0.1"
+log = "0.4"
+
