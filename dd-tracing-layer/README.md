@@ -23,9 +23,13 @@ You can easily change the region or provide a custom URL if needed.
 Here's a simple example of how to set it up and use it:
 
 ```rust
+use dd_tracing_layer::DatadogOptions;
+use tracing_subscriber::prelude::*;
+use tracing::{instrument, subscriber};
+
 #[instrument]
 fn log(msg: &'static str) {
-  tracing::info!(format!("your message: {}", msg));
+    tracing::info!("your message: {}", msg);
 }
 
 fn main() {

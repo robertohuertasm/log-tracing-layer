@@ -5,21 +5,25 @@
 //! ## Example
 //!
 //! ```rust
-//!#[instrument]
-//!fn log(msg: &'static str) {
-//!  tracing::info!(format!("your message: {}", msg));
-//!}
+//! use dd_tracing_layer::DatadogOptions;
+//! use tracing_subscriber::prelude::*;
+//! use tracing::{instrument, subscriber};
 //!
-//!fn main() {
-//!    let options = DatadogOptions::new("my-service", "my-datadog-api-key")
-//!        .with_tags("env:dev");
-//!    let dd = dd_tracing_layer::create(options);
-//!    let subscriber = tracing_subscriber::registry()
-//!        .with(tracing_subscriber::fmt::Layer::new().json())
-//!        .with(dd);
-//!    let _s = subscriber::set_default(subscriber);
-//!    log("hello world!");
-//!}
+//! #[instrument]
+//! fn log(msg: &'static str) {
+//!   tracing::info!("your message: {}", msg);
+//! }
+//!
+//! fn main() {
+//!     let options = DatadogOptions::new("my-service", "my-datadog-api-key")
+//!         .with_tags("env:dev");
+//!     let dd = dd_tracing_layer::create(options);
+//!     let subscriber = tracing_subscriber::registry()
+//!         .with(tracing_subscriber::fmt::Layer::new().json())
+//!         .with(dd);
+//!     let _s = subscriber::set_default(subscriber);
+//!     log("hello world!");
+//! }
 //!```
 mod datadog_ingestor;
 

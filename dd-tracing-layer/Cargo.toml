@@ -1,6 +1,6 @@
 [package]
 name = "dd-tracing-layer"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
 description = "Send your logs to Datadog"
 edition = "2021"
