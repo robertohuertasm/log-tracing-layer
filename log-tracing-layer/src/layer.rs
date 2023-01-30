@@ -32,7 +32,7 @@ impl LogLayer {
                     .build()
                 {
                     Err(e) => {
-                        log::error!("Runtime creation failure: {:?}", e);
+                        eprintln!("Runtime creation failure: {:?}", e);
                         return;
                     }
                     Ok(r) => r,
@@ -41,13 +41,10 @@ impl LogLayer {
                 rt.block_on(async move {
                     ingestor.start();
                     while let Some(log) = rx.recv().await {
-                        log::info!("LAYER: Adding log to ingestor");
                         ingestor.ingest(log).await;
                     }
-                    log::info!("LAYER: Done sending logs");
                     ingestor.flush().await;
                 });
-                log::info!("LAYER: Dropping runtime");
                 drop(rt);
             })
             .expect("Something went wrong spawning the thread");
@@ -76,10 +73,11 @@ impl LogLayer {
             }
         }
 
-        // there will be one for sure. We use that to get the span
-        let last = spans.last().unwrap();
-        log.insert("span".to_string(), json!(last));
-        log.insert("spans".to_string(), json!(spans));
+        // if no last span, it means there are no spans at all
+        if let Some(last) = spans.last() {
+            log.insert("span".to_string(), json!(last));
+            log.insert("spans".to_string(), json!(spans));
+        }
 
         log.insert(
             "level".to_string(),
@@ -106,7 +104,6 @@ impl LogLayer {
             json!(chrono::Utc::now().to_rfc3339()),
         );
 
-        log::debug!("LAYER: log = {:#?}", log);
         log
     }
 }
@@ -121,7 +118,6 @@ impl Drop for LogLayer {
         if let Some(handle) = self.handle.take() {
             let _result = handle.join();
         }
-        log::info!("LAYER: Dropped!");
     }
 }
 
@@ -146,10 +142,11 @@ where
 
     fn on_event(&self, event: &tracing::Event<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) {
         // send to the channel
-        log::info!("LAYER: Sending to ingestor");
         if let Some(tx) = &self.tx {
             let log = Self::create_log(event, &ctx);
-            tx.send(log).unwrap();
+            if let Err(e) = tx.send(log) {
+                eprintln!("LAYER: Error sending log to ingestor: {:?}", e);
+            }
         }
     }
 }

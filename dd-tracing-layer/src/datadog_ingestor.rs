@@ -7,7 +7,7 @@ use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::RwLock;
 
 const DD_SOURCE: &str = "dd-tracing-layer";
-const DD_TAGS: &str = "version:0.1.0";
+const DD_TAGS: &str = "version:0.1.2";
 const MAX_BATCH_SIZE: usize = 1000;
 const MAX_BATCH_DURATION_SECS: i64 = 5;
 const MAX_RETRIES: u8 = 3;
@@ -99,13 +99,10 @@ impl DatadogLogIngestor {
     #[async_recursion]
     async fn send_logs(&self, logs: &[Log], retries: u8) {
         if retries > MAX_RETRIES {
-            log::error!("Failed to send logs after {} retries", retries);
+            eprintln!("Failed to send logs after {} retries", retries);
         }
 
-        let retry = || {
-            log::info!("Retrying...");
-            self.send_logs(logs, retries + 1)
-        };
+        let retry = || self.send_logs(logs, retries + 1);
 
         // https://docs.datadoghq.com/api/latest/logs/?code-lang=typescript
         match self
@@ -119,23 +116,23 @@ impl DatadogLogIngestor {
         {
             Ok(res) => match res.status().as_u16() {
                 202 => {
-                    log::info!("Accepted: the request has been accepted for processing");
+                    //println!("Accepted: the request has been accepted for processing");
                 }
                 400 => {
-                    log::error!("Bad request (likely an issue in the payload formatting)");
+                    eprintln!("Bad request (likely an issue in the payload formatting)");
                 }
                 401 => {
-                    log::error!("Unauthorized (likely a missing API Key)");
+                    eprintln!("Unauthorized (likely a missing API Key)");
                 }
                 403 => {
-                    log::error!("Permission issue (likely using an invalid API Key)");
+                    eprintln!("Permission issue (likely using an invalid API Key)");
                 }
                 408 => {
-                    log::error!("Request Timeout, request should be retried after some time");
+                    eprintln!("Request Timeout, request should be retried after some time");
                     retry().await;
                 }
                 413 => {
-                    log::error!("Payload too large (batch is above 5MB uncompressed)");
+                    eprintln!("Payload too large (batch is above 5MB uncompressed)");
                     // split batch
                     let logs_len = logs.len();
                     let half = logs_len / 2;
@@ -144,36 +141,34 @@ impl DatadogLogIngestor {
                     self.send_logs(right, retries + 1).await;
                 }
                 429 => {
-                    log::error!("Too Many Requests, request should be retried after some time");
+                    eprintln!("Too Many Requests, request should be retried after some time");
                     retry().await;
                 }
                 500 => {
-                    log::error!("Internal Server Error, the server encountered an unexpected condition that prevented it from fulfilling the request, request should be retried after some time");
+                    eprintln!("Internal Server Error, the server encountered an unexpected condition that prevented it from fulfilling the request, request should be retried after some time");
                     retry().await;
                 }
                 503 => {
-                    log::error!("Service Unavailable, the server is not ready to handle the request probably because it is overloaded, request should be retried after some time");
+                    eprintln!("Service Unavailable, the server is not ready to handle the request probably because it is overloaded, request should be retried after some time");
                     retry().await;
                 }
                 _ => {
-                    log::error!("Unknown error, try again later");
+                    eprintln!("Unknown error, try again later");
                     retry().await;
                 }
             },
             Err(e) => {
-                log::error!("Failed to send logs to Datadog: {:?}", e);
+                eprintln!("Failed to send logs to Datadog: {:?}", e);
             }
         }
     }
 
     #[async_recursion]
     async fn try_send(&mut self, is_flush: bool) {
-        log::info!("Flushing...");
         {
             // send current logs to datadog if there are any
             let queue = self.queue.read().await;
             if queue.is_empty() {
-                log::info!("Queue is empty, skipping flush");
                 return;
             }
             if !is_flush {
@@ -182,7 +177,6 @@ impl DatadogLogIngestor {
                 let now = Utc::now();
                 let diff = now - last_log.received_at;
                 if diff < Duration::seconds(MAX_BATCH_DURATION_SECS) {
-                    log::info!("Last log is too recent, skipping flush: {:?}", diff);
                     return;
                 }
             }
@@ -198,7 +192,6 @@ impl DatadogLogIngestor {
 
         // send them (retries if it fails)
         self.send_logs(&logs, 0).await;
-        log::info!("Flushed {} logs", logs.len());
 
         // check if the queue is empty and flush again if it's not
         let is_queue_empty = { self.queue.read().await.is_empty() };

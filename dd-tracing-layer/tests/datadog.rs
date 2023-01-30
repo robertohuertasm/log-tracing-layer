@@ -18,16 +18,6 @@ mod tests {
 
     #[test]
     fn datadog_works() {
-        simple_logger::SimpleLogger::new()
-            .with_level(log::LevelFilter::Info)
-            .with_module_level("log_tracing_layer::layer", log::LevelFilter::Debug)
-            .with_module_level(
-                "dd_tracing_layer::datadog_ingestor",
-                log::LevelFilter::Debug,
-            )
-            .without_timestamps()
-            .init()
-            .unwrap();
         let server = httpmock::MockServer::start();
         let _mock = server.mock(|when, then| {
             when.any_request();
