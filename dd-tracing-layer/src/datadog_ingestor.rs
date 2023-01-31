@@ -7,7 +7,7 @@ use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::RwLock;
 
 const DD_SOURCE: &str = "dd-tracing-layer";
-const DD_TAGS: &str = "version:0.1.2";
+const DD_TAGS: &str = "version:0.1.3";
 const MAX_BATCH_SIZE: usize = 1000;
 const MAX_BATCH_DURATION_SECS: i64 = 5;
 const MAX_RETRIES: u8 = 3;

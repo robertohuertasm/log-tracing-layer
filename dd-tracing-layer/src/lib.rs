@@ -27,7 +27,7 @@
 //!```
 mod datadog_ingestor;
 
-pub use datadog_ingestor::DatadogOptions;
+pub use datadog_ingestor::{DatadogOptions, Region};
 pub use log_tracing_layer::LogLayer;
 
 /// Creates a log layer that will send logs to Datadog
