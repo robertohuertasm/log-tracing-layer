@@ -7,7 +7,6 @@ use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::RwLock;
 
 const DD_SOURCE: &str = "dd-tracing-layer";
-const DD_TAGS: &str = "source-version:0.1.4";
 const MAX_BATCH_SIZE: usize = 1000;
 const MAX_BATCH_DURATION_SECS: i64 = 5;
 const MAX_RETRIES: u8 = 3;
@@ -82,9 +81,11 @@ impl DatadogLogIngestor {
             .to_string()
         });
 
+        let source_tags = &format!("source-version:{}", env!("CARGO_PKG_VERSION"));
+
         let tags = options
             .tags
-            .map_or_else(|| DD_TAGS.into(), |t| format!("{t}, {DD_TAGS}"));
+            .map_or_else(|| source_tags.into(), |t| format!("{t}, {source_tags}"));
 
         Self {
             url,
