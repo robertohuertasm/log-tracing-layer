@@ -175,13 +175,11 @@ impl DatadogLogIngestor {
             if !is_flush {
                 // send the logs only if the last one is more than 5 seconds old
                 // or if the queue has more than MAX_BATCH_SIZE logs
-                if queue.len() < MAX_BATCH_SIZE {
-                    return;
-                }
                 let last_log = queue.back().unwrap();
                 let now = Utc::now();
                 let diff = now - last_log.received_at;
-                if diff < Duration::seconds(MAX_BATCH_DURATION_SECS) {
+                if diff < Duration::seconds(MAX_BATCH_DURATION_SECS) || queue.len() < MAX_BATCH_SIZE
+                {
                     return;
                 }
             }
