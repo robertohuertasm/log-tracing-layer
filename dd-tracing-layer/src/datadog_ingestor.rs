@@ -178,7 +178,7 @@ impl DatadogLogIngestor {
                 let last_log = queue.back().unwrap();
                 let now = Utc::now();
                 let diff = now - last_log.received_at;
-                if diff < Duration::seconds(MAX_BATCH_DURATION_SECS) || queue.len() < MAX_BATCH_SIZE
+                if diff < Duration::seconds(MAX_BATCH_DURATION_SECS) && queue.len() < MAX_BATCH_SIZE
                 {
                     return;
                 }
