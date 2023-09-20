@@ -7,7 +7,7 @@ use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::RwLock;
 
 const DD_SOURCE: &str = "dd-tracing-layer";
-const DD_TAGS: &str = "version:0.1.3";
+const DD_TAGS: &str = "source-version:0.1.4";
 const MAX_BATCH_SIZE: usize = 1000;
 const MAX_BATCH_DURATION_SECS: i64 = 5;
 const MAX_RETRIES: u8 = 3;
@@ -173,6 +173,10 @@ impl DatadogLogIngestor {
             }
             if !is_flush {
                 // send the logs only if the last one is more than 5 seconds old
+                // or if the queue has more than MAX_BATCH_SIZE logs
+                if queue.len() < MAX_BATCH_SIZE {
+                    return;
+                }
                 let last_log = queue.back().unwrap();
                 let now = Utc::now();
                 let diff = now - last_log.received_at;

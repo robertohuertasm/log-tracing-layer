@@ -1,6 +1,3 @@
 [workspace]
-members = [
-  "log-tracing-layer",
-  "dd-tracing-layer",
-]
-
+resolver = "2"
+members = ["log-tracing-layer", "dd-tracing-layer"]
