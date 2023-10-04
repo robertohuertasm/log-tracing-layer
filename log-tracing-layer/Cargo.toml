@@ -1,10 +1,6 @@
 [package]
 name = "log-tracing-layer"
-<<<<<<< HEAD
-version = "0.1.8"
-=======
 version = "0.2.0"
->>>>>>> 443a05a (feat(datadog): add compression support)
 authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
 description = "Build your own custom tracing layer."
 edition = "2021"
