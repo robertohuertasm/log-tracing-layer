@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use chrono::{Duration, Utc};
 use log_tracing_layer::{Log, LogEvent, LogIngestor};
 use serde_json::json;
-use std::{collections::VecDeque, sync::Arc};
+use std::{collections::VecDeque, error::Error, io::Write, sync::Arc};
 use tokio::sync::RwLock;
 
 const DD_SOURCE: &str = "dd-tracing-layer";
@@ -97,6 +97,14 @@ impl DatadogLogIngestor {
         }
     }
 
+    fn compress(&self, logs: &[Log]) -> Result<Vec<u8>, Box<dyn Error>> {
+        let bytes = serde_json::to_vec(&logs)?;
+        let mut encoder = libflate::gzip::Encoder::new(Vec::new())?;
+        encoder.write_all(&bytes)?;
+        let result = encoder.finish().into_result()?;
+        Ok(result)
+    }
+
     #[async_recursion]
     async fn send_logs(&self, logs: &[Log], retries: u8) {
         if retries > MAX_RETRIES {
@@ -105,13 +113,24 @@ impl DatadogLogIngestor {
 
         let retry = || self.send_logs(logs, retries + 1);
 
+        // compress the logs
+        let compressed_logs = match self.compress(logs) {
+            Ok(logs) => logs,
+            Err(e) => {
+                eprintln!("Failed to compress logs: {:?}", e);
+                return;
+            }
+        };
+
         // https://docs.datadoghq.com/api/latest/logs/?code-lang=typescript
         match self
             .client
             .post(&self.url)
             .header("User-Agent", "dd-tracing-subscriber/0.1.0")
             .header("DD-API-KEY", &self.api_key)
-            .json(logs)
+            .header("Content-Type", "application/json")
+            .header("Content-Encoding", "gzip")
+            .body(compressed_logs)
             .send()
             .await
         {
