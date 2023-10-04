@@ -32,7 +32,7 @@ impl LogLayer {
                     .build()
                 {
                     Err(e) => {
-                        eprintln!("Runtime creation failure: {:?}", e);
+                        eprintln!("Runtime creation failure: {e:?}");
                         return;
                     }
                     Ok(r) => r,
@@ -145,7 +145,7 @@ where
         if let Some(tx) = &self.tx {
             let log = Self::create_log(event, &ctx);
             if let Err(e) = tx.send(log) {
-                eprintln!("LAYER: Error sending log to ingestor: {:?}", e);
+                eprintln!("LAYER: Error sending log to ingestor: {e:?}");
             }
         }
     }
