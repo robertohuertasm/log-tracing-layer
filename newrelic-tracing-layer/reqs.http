@@ -1,0 +1,64 @@
+### multiple - simple
+POST https://log-api.newrelic.com/log/v1
+Content-Type: application/json
+Api-Key: 6fbeedb52a0ca813c0f39254ebc90458FFFFNRAL
+
+[
+   {
+    "timestamp": "1696802499",
+    "logtype":   "app-logs",
+    "message":   "mensaje de prueba 22",
+    "attribute1": "1",
+    "attribute2": "2"
+  },
+  {
+    "timestamp": "1696802300",
+    "logtype":   "app-logs",
+    "message":   "mensaje de prueba 2",
+    "attribute1": "1",
+    "attribute2": "2"
+  }
+]
+
+
+### Single works
+POST https://log-api.newrelic.com/log/v1
+Content-Type: application/json
+Api-Key: 6fbeedb52a0ca813c0f39254ebc90458FFFFNRAL
+
+{
+  "timestamp": "1696807512",
+  "logtype":   "app-logs",
+  "message":   "mensaje de prueba 0",
+  "attribute1": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "attribute2": "2",
+  "level": "ERROR"
+}
+
+### Multiple working detailed
+POST https://log-api.newrelic.com/log/v1
+Content-Type: application/json
+Api-Key: 6fbeedb52a0ca813c0f39254ebc90458FFFFNRAL
+
+[{
+   "common": {
+     "attributes": {
+       "logtype": "app-logs",
+       "service": "login-service",
+       "hostname": "login.example.com"
+     }
+   },
+   "logs": [{
+       "timestamp": 1696804837,
+       "message": "mensaje 1"
+     },{
+       "timestamp": 1696804830,
+       "message": "mensaje 2",
+       "attributes": {
+         "auditId": 123
+       }
+     }]
+}]
