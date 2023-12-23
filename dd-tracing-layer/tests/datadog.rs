@@ -28,12 +28,16 @@ mod tests {
             .with_tags("env:dev");
         let dd = dd_tracing_layer::create(options);
         let subscriber = tracing_subscriber::registry()
-            // .with(tracing_subscriber::fmt::Layer::new().json())
+            .with(tracing_subscriber::fmt::Layer::new().json())
             .with(dd);
         let _s = subscriber::set_default(subscriber);
         log("a");
         std::thread::sleep(std::time::Duration::from_secs(2));
-        log("2a");
+        tracing::info!(
+            ip = "127.0.0.1",
+            person = r#"{ "name": "rob", "age": 15 }"#,
+            message = "Testing Json"
+        );
         std::thread::sleep(std::time::Duration::from_secs(2));
         log("3a");
         std::thread::sleep(std::time::Duration::from_secs(6));

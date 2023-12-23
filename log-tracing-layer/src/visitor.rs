@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use serde_json::json;
 use tracing::field::Visit;
 
@@ -14,7 +16,9 @@ impl JsonVisitor {
 }
 impl Visit for JsonVisitor {
     fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
-        self.filter_insert(field, json!(value));
+        // try to parse the string in case it's already a json value
+        let json_value = serde_json::Value::from_str(value).unwrap_or_else(|_| json!(value));
+        self.filter_insert(field, json_value);
     }
     fn record_bool(&mut self, field: &tracing::field::Field, value: bool) {
         self.filter_insert(field, json!(value));
