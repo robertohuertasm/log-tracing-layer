@@ -17,9 +17,9 @@ jobs:
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
-            toolchain: ${{ matrix.rust }}
-            override: true
-            components: rustfmt, clippy
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: rustfmt, clippy
       - uses: davidB/rust-cargo-make@v1
       - name: Checkout
         uses: actions/checkout@v2
@@ -27,3 +27,5 @@ jobs:
         run: cargo make format
       - name: Run cargo clippy
         run: cargo make clippy
+      - name: Run cargo test
+        run: cargo test
