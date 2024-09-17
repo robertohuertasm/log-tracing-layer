@@ -17,7 +17,7 @@ mod tests {
     }
 
     fn get_api_key() -> String {
-        std::env::var("DD_API_KEY").expect("DD_API_KEY must be set as an environment variable")
+        std::env::var("DD_API_KEY").unwrap_or("invented_api_key".to_string())
     }
 
     fn setup(server: &httpmock::MockServer) -> (httpmock::Mock, dd_tracing_layer::LogLayer) {
