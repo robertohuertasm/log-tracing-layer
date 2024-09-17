@@ -1,9 +1,9 @@
 use async_recursion::async_recursion;
 use async_trait::async_trait;
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use log_tracing_layer::{Log, LogEvent, LogIngestor};
 use serde_json::json;
-use std::{collections::VecDeque, error::Error, io::Write, sync::Arc};
+use std::{collections::VecDeque, error::Error, io::Write, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
 const DD_SOURCE: &str = "dd-tracing-layer";
@@ -109,9 +109,15 @@ impl DatadogLogIngestor {
     async fn send_logs(&self, logs: &[Log], retries: u8) {
         if retries > MAX_RETRIES {
             eprintln!("Failed to send logs after {} retries", retries);
+            return;
         }
 
-        let retry = || self.send_logs(logs, retries + 1);
+        let retry = || async {
+            let next = retries + 1;
+            let next_time = 100 * next as u64;
+            tokio::time::sleep(Duration::from_millis(next_time)).await;
+            self.send_logs(logs, next).await;
+        };
 
         // compress the logs
         let compressed_logs = match self.compress(logs) {
@@ -136,7 +142,7 @@ impl DatadogLogIngestor {
         {
             Ok(res) => match res.status().as_u16() {
                 202 => {
-                    //println!("Accepted: the request has been accepted for processing");
+                    // println!("Accepted: the request has been accepted for processing");
                 }
                 400 => {
                     eprintln!("Bad request (likely an issue in the payload formatting)");
@@ -197,7 +203,8 @@ impl DatadogLogIngestor {
                 let last_log = queue.back().unwrap();
                 let now = Utc::now();
                 let diff = now - last_log.received_at;
-                if diff < Duration::seconds(MAX_BATCH_DURATION_SECS) && queue.len() < MAX_BATCH_SIZE
+                if diff < chrono::Duration::seconds(MAX_BATCH_DURATION_SECS)
+                    && queue.len() < MAX_BATCH_SIZE
                 {
                     return;
                 }
@@ -246,7 +253,7 @@ impl LogIngestor for DatadogLogIngestor {
         // start a timer that will flush the queue every n seconds
         let mut this = self.clone();
         tokio::spawn(async move {
-            let period = std::time::Duration::from_secs(MAX_BATCH_DURATION_SECS as u64);
+            let period = Duration::from_secs(MAX_BATCH_DURATION_SECS as u64);
             let mut interval = tokio::time::interval(period);
             loop {
                 interval.tick().await;

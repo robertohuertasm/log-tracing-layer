@@ -1,6 +1,6 @@
 [package]
 name = "log-tracing-layer"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
 description = "Build your own custom tracing layer."
 edition = "2021"
