@@ -6,7 +6,7 @@ description = "Build your own custom tracing layer."
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/robertohuertasm/log-tracing-layer"
-categories = ["development-tools", "debugging", "asynchronous", "profiling"]
+categories = ["development-tools", "asynchronous"]
 keywords = ["tracing", "log", "layer", "tracing-subscriber"]
 
 [badges]
