@@ -6,7 +6,7 @@ description = "Send your logs to Datadog"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/robertohuertasm/log-tracing-layer"
-categories = ["development-tools", "debugging", "asynchronous", "profiling"]
+categories = ["development-tools", "asynchronous"]
 keywords = ["tracing", "log", "datadog", "layer", "tracing-subscriber"]
 
 [badges]
