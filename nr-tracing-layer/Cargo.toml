@@ -1,0 +1,32 @@
+[package]
+name = "nr-tracing-layer"
+version = "0.4.0"
+authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
+description = "Send your logs to New Relic"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/robertohuertasm/log-tracing-layer"
+categories = ["development-tools", "asynchronous"]
+keywords = ["tracing", "log", "new relic", "layer", "tracing-subscriber"]
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log-tracing-layer = { path = "../log-tracing-layer", version = "0.4.0" }
+tracing-subscriber = "0.3"
+tracing = "0.1"
+reqwest = { version = "0.12", features = ["gzip"] }
+tokio = { version = "1", features = ["sync", "rt-multi-thread", "time"] }
+serde_json = "1"
+chrono = "0.4"
+async-trait = "0.1"
+async-recursion = "1.0"
+libflate = "2.0"
+
+[dev-dependencies]
+dotenvy = "0.15.7"
+tracing-subscriber = { version = "0.3", features = ["json", "registry"] }
+httpmock = "0.7.0"
