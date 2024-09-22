@@ -26,7 +26,7 @@ mod tests {
 
         let url = server.base_url().clone();
         let mock = server.mock(|when, then| {
-            when.any_request().header_exists("NR-API-KEY");
+            when.any_request().header_exists("Api-Key");
             then.status(202).json_body(serde_json::json!([]));
         });
 
@@ -88,14 +88,14 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn manual_tests_without_mock_server() {
+    // #[ignore]
+    fn nr_manual_tests_without_mock_server() {
         // set up
         dotenvy::from_filename(".env").ok();
         let api_key = get_api_key();
 
         let options = NewRelicOptions::new("nr-tracing-layer", api_key)
-            .with_region(Region::US1)
+            .with_region(Region::US)
             .with_tags("env:dev");
 
         let nr = nr_tracing_layer::create(options);
@@ -116,7 +116,17 @@ mod tests {
         tracing::info!(
             ip = "127.0.0.1",
             person = r#"{ "name": "rob", "age": 15 }"#,
-            message = "Testing Json"
+            message = "Testing Json1"
+        );
+        tracing::info!(
+            ip = "127.0.0.1",
+            person = r#"{ "name": "rob", "age": 15 }"#,
+            message = "Testing Json2"
+        );
+        tracing::info!(
+            ip = "127.0.0.1",
+            person = r#"{ "name": "rob", "age": 15 }"#,
+            message = "Testing Json3"
         );
         // // yet another log
         // log("3a");

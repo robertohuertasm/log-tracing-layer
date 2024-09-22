@@ -6,18 +6,16 @@ use serde_json::json;
 use std::{collections::VecDeque, error::Error, io::Write, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
-const DD_SOURCE: &str = "nr-tracing-layer";
+const NR_SOURCE: &str = "nr-tracing-layer";
 const MAX_BATCH_SIZE: usize = 1000;
 const MAX_BATCH_DURATION_SECS: i64 = 5;
 const MAX_RETRIES: u8 = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Region {
-    US1,
-    US3,
-    US5,
-    US1FED,
+    US,
     EU,
+    FED,
 }
 
 #[derive(Debug, Default)]
@@ -30,6 +28,7 @@ pub struct NewRelicOptions {
 }
 
 impl NewRelicOptions {
+    // TODO: (ROB) service name may not be used in New Relic
     pub fn new(service_name: impl Into<String>, api_key: impl Into<String>) -> Self {
         Self {
             service_name: service_name.into(),
@@ -44,6 +43,8 @@ impl NewRelicOptions {
         self
     }
 
+    // TODO: (ROB) tags may not be used in New Relic, although they have the concept of
+    // common attributes which may be similar. Review this.
     #[must_use]
     pub fn with_tags(mut self, tags: impl Into<String>) -> Self {
         self.tags = Some(tags.into());
@@ -69,19 +70,18 @@ pub struct NewRelicLogIngestor {
 
 impl NewRelicLogIngestor {
     pub fn new(options: NewRelicOptions) -> Self {
-        // TODO: (ROB) review this link.k
-        // https://docs.datadoghq.com/logs/log_collection/?tab=serverless#supported-endpoints
+        // DOCS for New Relic's intake API
+        // https://docs.newrelic.com/docs/logs/log-api/introduction-log-api/
         let url = options.url.unwrap_or_else(|| {
             match options.region {
-                Some(Region::US1) | None => "https://http-intake.logs.datadoghq.com/api/v2/logs",
-                Some(Region::US3) => "https://http-intake.logs.us3.datadoghq.com/api/v2/logs",
-                Some(Region::US5) => "https://http-intake.logs.us5.datadoghq.com/api/v2/logs",
-                Some(Region::US1FED) => "https://http-intake.logs.ddog-gov.com/api/v2/logs",
-                Some(Region::EU) => "https://http-intake.logs.datadoghq.eu/api/v2/logs",
+                Some(Region::US) | None => "https://log-api.newrelic.com/log/v1",
+                Some(Region::EU) => "https://log-api.eu.newrelic.com/log/v1",
+                Some(Region::FED) => "https://gov-log-api.newrelic.com/log/v1",
             }
             .to_string()
         });
 
+        // TODO: (ROB) review if tags make sense for New Relic
         let source_tags = &format!("source-version:{}", env!("CARGO_PKG_VERSION"));
 
         let tags = options
@@ -129,13 +129,11 @@ impl NewRelicLogIngestor {
             }
         };
 
-        // TODO: (ROB) review this url.
-        // https://docs.datadoghq.com/api/latest/logs/?code-lang=typescript
         match self
             .client
             .post(&self.url)
-            .header("User-Agent", "dd-tracing-subscriber/0.1.0")
-            .header("DD-API-KEY", &self.api_key)
+            .header("User-Agent", "nr-tracing-subscriber/0.1.0")
+            .header("Api-Key", &self.api_key)
             .header("Content-Type", "application/json")
             .header("Content-Encoding", "gzip")
             .body(compressed_logs)
@@ -144,7 +142,7 @@ impl NewRelicLogIngestor {
         {
             Ok(res) => match res.status().as_u16() {
                 202 => {
-                    // println!("Accepted: the request has been accepted for processing");
+                    println!("Accepted: the request has been accepted for processing");
                 }
                 400 => {
                     eprintln!("Bad request (likely an issue in the payload formatting)");
@@ -160,7 +158,7 @@ impl NewRelicLogIngestor {
                     retry().await;
                 }
                 413 => {
-                    eprintln!("Payload too large (batch is above 5MB uncompressed)");
+                    eprintln!("Payload too large (batch is above 1MB uncompressed)");
                     // split batch
                     let logs_len = logs.len();
                     let half = logs_len / 2;
@@ -216,6 +214,8 @@ impl NewRelicLogIngestor {
         // get the logs to send
         let logs = {
             let mut queue = self.queue.write().await;
+            // TODO: (ROB) this doesn't apply to NR.
+            // they only care about the full payload not exceeding 1MB
             // max amount of logs to send at once is 1000
             let tail = usize::min(queue.len(), MAX_BATCH_SIZE);
             queue.drain(..tail).map(|e| e.log).collect::<Vec<_>>()
@@ -266,9 +266,10 @@ impl LogIngestor for NewRelicLogIngestor {
 
     async fn ingest(&mut self, mut log: Log) {
         // add new relic specific fields
-        log.insert("ddsource".to_string(), json!(DD_SOURCE));
-        log.insert("ddtags".to_string(), json!(self.tags));
+        log.insert("source".to_string(), json!(NR_SOURCE));
+        log.insert("tags".to_string(), json!(self.tags));
         log.insert("service".to_string(), json!(self.service_name));
+
         let log_event = LogEvent {
             log,
             received_at: Utc::now(),
