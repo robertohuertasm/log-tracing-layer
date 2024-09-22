@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
 
-    use dd_tracing_layer::DatadogOptions;
+    use dd_tracing_layer::{DatadogOptions, Region};
     use tracing::{instrument, subscriber};
     use tracing_subscriber::prelude::*;
 
@@ -85,5 +85,40 @@ mod tests {
         );
         // yet another log
         log("3a");
+    }
+
+    #[test]
+    #[ignore]
+    fn manual_tests_without_mock_server() {
+        // set up
+        dotenvy::from_filename(".env").ok();
+        let api_key = get_api_key();
+
+        let options = DatadogOptions::new("dd-tracing-layer", api_key)
+            .with_region(Region::US1)
+            .with_tags("env:dev");
+
+        let dd = dd_tracing_layer::create(options);
+
+        // create the subscriber
+        let subscriber = tracing_subscriber::registry()
+            // this shows the traces to the terminal...
+            .with(tracing_subscriber::fmt::Layer::new().json())
+            .with(dd);
+        let _s = subscriber::set_default(subscriber);
+
+        // test the logs and check the terminal
+        // log("mensaje de prueba");
+
+        // // proof that logs are not blocking
+        // std::thread::sleep(std::time::Duration::from_secs(2));
+        // // plain log
+        tracing::info!(
+            ip = "127.0.0.1",
+            person = r#"{ "name": "rob", "age": 15 }"#,
+            message = "Testing Json"
+        );
+        // // yet another log
+        // log("3a");
     }
 }
