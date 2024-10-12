@@ -1,11 +1,11 @@
-name: Release
+name: Release DD Tracing Layer
 
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
   workflow_dispatch:
-    
+
 jobs:
   crates:
     runs-on: ubuntu-latest
@@ -19,5 +19,4 @@ jobs:
       - name: Publish to crates.io
         run: |
           cargo login ${{secrets.crates_key}}
-          cargo publish -p log-tracing-layer
           cargo publish -p dd-tracing-layer
