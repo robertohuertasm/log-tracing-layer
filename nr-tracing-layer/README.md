@@ -1,20 +1,19 @@
-# dd-tracing-layer
+# nr-tracing-layer
 
-[![license](https://img.shields.io/crates/l/dd-tracing-layer?style=for-the-badge)](https://github.com/robertohuertasm/log-tracing-layer/blob/master/LICENSE)
-[![crates.io](https://img.shields.io/crates/v/dd-tracing-layer?style=for-the-badge)](https://crates.io/crates/dd-tracing-layer)
-[![docs.rs](https://img.shields.io/docsrs/dd-tracing-layer?style=for-the-badge)](https://docs.rs/dd-tracing-layer)
+[![license](https://img.shields.io/crates/l/nr-tracing-layer?style=for-the-badge)](https://github.com/robertohuertasm/log-tracing-layer/blob/master/LICENSE)
+[![crates.io](https://img.shields.io/crates/v/nr-tracing-layer?style=for-the-badge)](https://crates.io/crates/nr-tracing-layer)
+[![docs.rs](https://img.shields.io/docsrs/nr-tracing-layer?style=for-the-badge)](https://docs.rs/nr-tracing-layer)
 
-A [tracing layer](https://tokio.rs/tokio/topics/tracing) that sends logs to the [Datadog Log API](https://docs.datadoghq.com/api/latest/logs/?code-lang=typescript#send-logs).
+A [tracing layer](https://tokio.rs/tokio/topics/tracing) that sends logs to the [New Relic Log API](https://docs.newrelic.com/docs/logs/get-started/get-started-log-management/).
 
-It's mainly useful when you don't have access to your infrastructure and you cannot use the [Datadog Agent](https://docs.datadoghq.com/agent/) or any [other mean](https://docs.datadoghq.com/logs/log_collection/?tab=host#setup).
 
 ## Requirements
 
-You'll need a [Datadog API Key](https://docs.datadoghq.com/account_management/api-app-keys/#api-keys) for everything to work.
+You'll need a [New Relic API Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/) for everything to work.
 
 ## Endpoint
 
-This crate uses the `v2` logs endpoints and, by default, will try to send the logs to the `US1` region.
+By default, will try to send the logs to the `US1` region.
 
 You can easily change the region or provide a custom URL if needed.
 
@@ -23,9 +22,9 @@ You can easily change the region or provide a custom URL if needed.
 Here's a simple example of how to set it up and use it:
 
 ```rust
-use dd_tracing_layer::DatadogOptions;
+use nr_tracing_layer::NewRelicOptions;
 use tracing_subscriber::prelude::*;
-use tracing::{instrument, subscriber};
+use tracing::{instrument, subscriber}
 
 #[instrument]
 fn log(msg: &'static str) {
@@ -33,9 +32,9 @@ fn log(msg: &'static str) {
 }
 
 fn main() {
-    let options = DatadogOptions::new("my-service", "my-datadog-api-key")
+    let options = NewRelicOptions::new("my-service", "my-new-relic-api-key")
         .with_tags("env:dev");
-    let dd = dd_tracing_layer::create(options);
+    let dd = nr_tracing_layer::create(options);
     let subscriber = tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::Layer::new().json())
         .with(dd);

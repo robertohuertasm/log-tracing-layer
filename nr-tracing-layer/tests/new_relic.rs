@@ -88,7 +88,7 @@ mod tests {
     }
 
     #[test]
-    // #[ignore]
+    #[ignore]
     fn nr_manual_tests_without_mock_server() {
         // set up
         dotenvy::from_filename(".env").ok();
