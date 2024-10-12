@@ -3,7 +3,7 @@ name: Release DD Tracing Layer
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*-dd-tracing-layer'
   workflow_dispatch:
 
 jobs:
