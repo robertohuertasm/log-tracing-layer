@@ -7,14 +7,7 @@ edition = "2021"
 license = "MIT"
 repository = "https://github.com/robertohuertasm/log-tracing-layer"
 categories = ["development-tools", "asynchronous"]
-keywords = [
-  "tracing",
-  "log",
-  "new-relic",
-  "newrelic",
-  "layer",
-  "tracing-subscriber",
-]
+keywords = ["tracing", "log", "new-relic", "layer", "tracing-subscriber"]
 
 [badges]
 maintenance = { status = "actively-developed" }
