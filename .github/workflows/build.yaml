@@ -30,4 +30,4 @@ jobs:
       - name: Run cargo test (default)
         run: cargo test
       - name: Run cargo test (tls)
-        run: cargo test -F tls --no--default-features
+        run: cargo test -F tls --no-default-features
