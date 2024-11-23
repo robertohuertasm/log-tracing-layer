@@ -1,6 +1,6 @@
 [package]
 name = "nr-tracing-layer"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
 description = "Send your logs to New Relic"
 edition = "2021"
@@ -13,12 +13,23 @@ keywords = ["tracing", "log", "new-relic", "layer", "tracing-subscriber"]
 maintenance = { status = "actively-developed" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["reqwest-default"]
+tls = ["reqwest-tls"]
 
 [dependencies]
 log-tracing-layer = { path = "../log-tracing-layer", version = "0.4.0" }
 tracing-subscriber = "0.3"
 tracing = "0.1"
-reqwest = { version = "0.12", features = ["gzip"] }
+
+reqwest-default = { package = "reqwest", version = "0.12", features = [
+  "gzip",
+], optional = true }
+reqwest-tls = { package = "reqwest", version = "0.12", default-features = false, features = [
+  "gzip",
+  "rustls-tls",
+], optional = true }
+
 tokio = { version = "1", features = ["sync", "rt-multi-thread", "time"] }
 serde_json = "1"
 chrono = "0.4"
