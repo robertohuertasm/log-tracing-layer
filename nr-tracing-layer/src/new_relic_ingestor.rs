@@ -6,6 +6,12 @@ use serde_json::json;
 use std::{collections::VecDeque, error::Error, io::Write, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
+#[cfg(not(feature = "tls"))]
+use reqwest_default as reqwest;
+
+#[cfg(feature = "tls")]
+use reqwest_tls as reqwest;
+
 const NR_SOURCE: &str = "nr-tracing-layer";
 const MAX_BATCH_SIZE: usize = 1000;
 const MAX_BATCH_DURATION_SECS: i64 = 5;

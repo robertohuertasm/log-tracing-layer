@@ -2,6 +2,13 @@ use async_recursion::async_recursion;
 use async_trait::async_trait;
 use chrono::Utc;
 use log_tracing_layer::{Log, LogEvent, LogIngestor};
+
+#[cfg(not(feature = "tls"))]
+use reqwest_default as reqwest;
+
+#[cfg(feature = "tls")]
+use reqwest_tls as reqwest;
+
 use serde_json::json;
 use std::{collections::VecDeque, error::Error, io::Write, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
