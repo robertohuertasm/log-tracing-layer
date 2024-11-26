@@ -1,5 +1,6 @@
 {
   "cSpell.words": ["ddsource", "ddtags"],
+  "rust-analyzer.cargo.allFeatures": false,
   "rust-analyzer.cargo.features": []
   // "rust-analyzer.cargo.features": ["tls"],
   // "rust-analyzer.cargo.noDefaultFeatures": true
