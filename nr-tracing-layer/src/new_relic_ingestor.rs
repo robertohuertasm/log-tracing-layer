@@ -104,7 +104,7 @@ impl NewRelicLogIngestor {
         }
     }
 
-    fn compress(&self, logs: &[Log]) -> Result<Vec<u8>, Box<dyn Error>> {
+    fn compress(logs: &[Log]) -> Result<Vec<u8>, Box<dyn Error>> {
         let bytes = serde_json::to_vec(&logs)?;
         let mut encoder = libflate::gzip::Encoder::new(Vec::new())?;
         encoder.write_all(&bytes)?;
@@ -115,22 +115,22 @@ impl NewRelicLogIngestor {
     #[async_recursion]
     async fn send_logs(&self, logs: &[Log], retries: u8) {
         if retries > MAX_RETRIES {
-            eprintln!("Failed to send logs after {} retries", retries);
+            eprintln!("Failed to send logs after {retries} retries");
             return;
         }
 
         let retry = || async {
             let next = retries + 1;
-            let next_time = 100 * next as u64;
+            let next_time = 100 * u64::from(next);
             tokio::time::sleep(Duration::from_millis(next_time)).await;
             self.send_logs(logs, next).await;
         };
 
         // compress the logs
-        let compressed_logs = match self.compress(logs) {
+        let compressed_logs = match Self::compress(logs) {
             Ok(logs) => logs,
             Err(e) => {
-                eprintln!("Failed to compress logs: {:?}", e);
+                eprintln!("Failed to compress logs: {e:?}");
                 return;
             }
         };
@@ -190,7 +190,7 @@ impl NewRelicLogIngestor {
                 }
             },
             Err(e) => {
-                eprintln!("Failed to send logs to New Relic: {:?}", e);
+                eprintln!("Failed to send logs to New Relic: {e:?}");
             }
         }
     }
