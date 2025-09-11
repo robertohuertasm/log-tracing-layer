@@ -20,7 +20,7 @@ mod tests {
         std::env::var("DD_API_KEY").unwrap_or("invented_api_key".to_string())
     }
 
-    fn setup(server: &httpmock::MockServer) -> (httpmock::Mock, dd_tracing_layer::LogLayer) {
+    fn setup(server: &httpmock::MockServer) -> (httpmock::Mock<'_>, dd_tracing_layer::LogLayer) {
         dotenvy::from_filename(".env").ok();
         let api_key = get_api_key();
 
