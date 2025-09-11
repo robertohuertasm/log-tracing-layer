@@ -25,6 +25,7 @@ pub enum Region {
     US5,
     US1FED,
     EU,
+    AP1,
 }
 
 #[derive(Debug, Default)]
@@ -84,6 +85,7 @@ impl DatadogLogIngestor {
                 Some(Region::US5) => "https://http-intake.logs.us5.datadoghq.com/api/v2/logs",
                 Some(Region::US1FED) => "https://http-intake.logs.ddog-gov.com/api/v2/logs",
                 Some(Region::EU) => "https://http-intake.logs.datadoghq.eu/api/v2/logs",
+                Some(Region::AP1) => "https://http-intake.logs.ap1.datadoghq.com/api/v2/logs",
             }
             .to_string()
         });
